@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: sljamca/go:0.0.3
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pkg-{{ checksum "go.mod" }}
+      - run: go get -d
+      - save_cache:
+          key: pkg-{{ checksum "go.mod" }}
+          paths:
+            - "/go/pkg"
+      - run: make test
