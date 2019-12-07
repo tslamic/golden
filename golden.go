@@ -132,16 +132,17 @@ func (d *Data) Eq(v interface{}) (string, error) {
 	return "", nil
 }
 
+// Equals compares the value v to the contents of the golden file.
 func (d *Data) Equals(t *testing.T, v interface{}) {
 	diff, err := d.Eq(v)
 	if err == nil {
 		return
 	}
 	switch err {
-	case ErrNoMarshaller, ErrNoPath:
-		t.Fatal(err)
-	default:
+	case ErrNotEqual:
 		t.Fatalf("golden file does not match the param\n%s", diff)
+	default:
+		t.Fatal(err)
 	}
 }
 
