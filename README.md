@@ -1,3 +1,4 @@
+[![CircleCI](https://circleci.com/gh/tslamic/golden.svg?style=svg)](https://circleci.com/gh/tslamic/golden) [![Go Report Card](https://goreportcard.com/badge/github.com/tslamic/golden)](https://goreportcard.com/report/github.com/tslamic/golden)
 
 # :large_orange_diamond: Golden  
   
