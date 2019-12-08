@@ -119,13 +119,11 @@ func stripSpace(t, u []byte) ([]byte, []byte) {
 
 func strip(b []byte) []byte {
 	buf := make([]byte, 0, len(b))
-	cnt := 0
 	for _, r := range b {
 		if unicode.IsSpace(rune(r)) {
 			continue
 		}
 		buf = append(buf, r)
-		cnt++
 	}
-	return buf[:cnt]
+	return buf
 }
