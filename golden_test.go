@@ -3,7 +3,6 @@ package golden
 import (
 	"encoding/xml"
 	"testing"
-	"time"
 )
 
 func TestErr(t *testing.T) {
@@ -25,30 +24,19 @@ func TestErr(t *testing.T) {
 	}
 }
 
-type meta struct {
-	Timestamp time.Time `json:"timestamp"`
-	ID        int       `json:"id"`
-}
-
 type greeter struct {
 	Greeting string `json:"greeting"`
-	Meta     *meta  `json:"meta"`
 }
 
-func TestAsJSON(t *testing.T) {
-	timestamp, err := time.Parse(time.RFC3339, "2019-12-01T17:06:14Z")
-	if err != nil {
-		t.Fatal(err)
-	}
-	g := &greeter{
-		Greeting: "hello",
-		Meta: &meta{
-			Timestamp: timestamp,
-			ID:        123456789,
-		},
-	}
-	gf := File("testdata/hello.json", JSON)
-	gf.Equals(t, g)
+func TestJSON(t *testing.T) {
+	greet := &greeter{Greeting: "Hello, World!"}
+
+	gf := File("testdata/hello.json", JSON, IgnoreWhitespace)
+	gf.Equals(t, greet)
+
+	gf = File("testdata/golden.file", func(d *Data) {
+		// apply custom attributes to d here.
+	})
 }
 
 type book struct {
