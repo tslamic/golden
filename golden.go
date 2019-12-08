@@ -2,8 +2,6 @@ package golden
 
 import (
 	"bytes"
-	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"flag"
 	"io/ioutil"
@@ -11,54 +9,9 @@ import (
 	"sync"
 	"testing"
 	"unicode"
-
-	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 var update = flag.Bool("update", false, "update golden files")
-
-// Marshaller returns v encoded as []byte.
-type Marshaller func(v interface{}) ([]byte, error)
-
-// Differ returns a diff string between t and u.
-type Differ func(t, u []byte) string
-
-// Option can modify the golden file attributes.
-type Option func(*Data)
-
-// Convenience Options.
-var (
-	JSON Option = func(d *Data) {
-		d.Marsh = json.Marshal
-	}
-	XML Option = func(d *Data) {
-		d.Marsh = xml.Marshal
-	}
-	IgnoreWhitespace Option = func(d *Data) {
-		d.IgnoreWhitespace = true
-	}
-)
-
-// ErrUnsupportedType is returned when encoding values other than string or a []byte using the DefaultMarshaller.
-var ErrUnsupportedType = errors.New("only []byte and string are supported by default, use a custom Marshaller, e.g. JSON")
-
-// DefaultMarshaller can handle []byte or string type.
-var DefaultMarshaller Marshaller = func(v interface{}) ([]byte, error) {
-	switch v := v.(type) {
-	case string:
-		return []byte(v), nil
-	case []byte:
-		return v, nil
-	default:
-		return nil, ErrUnsupportedType
-	}
-}
-
-var DefaultDiffer Differ = func(t, u []byte) string {
-	p := diffmatchpatch.New()
-	d := p.DiffMain(string(t), string(u), false)
-	return p.DiffPrettyText(d)
-}
 
 // Data represents the golden file attributes.
 type Data struct {
