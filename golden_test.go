@@ -9,11 +9,14 @@ import (
 
 func TestErr(t *testing.T) {
 	errs := map[*Data]error{
-		File(""): ErrNoPath,
+		File(""):          ErrNoPath,
+		File("world.txt"): ErrUnsupportedType,
 		File("hello.json", func(d *Data) {
 			d.Marsh = nil
 		}): ErrNoMarshaller,
-		File("world.txt"): ErrUnsupportedType,
+		File("hello.json", JSON, func(d *Data) {
+			d.Diff = nil
+		}): ErrNoDiffer,
 	}
 	for d, e := range errs {
 		_, err := d.Eq(struct{}{})
@@ -93,27 +96,6 @@ func TestXML(t *testing.T) {
 	gf := File("testdata/catalog.xml", XML, IgnoreWhitespace)
 	if diff, err := gf.Eq(c); err != nil {
 		t.Fatal(err, diff)
-	}
-}
-
-const content = "Hello, World!"
-
-func TestReadWrite(t *testing.T) {
-	gf := File("testdata/world.txt")
-
-	c := []byte(content)
-	w, err := gf.Write(c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	b := make([]byte, w)
-	r, err := gf.Read(b)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if w != r || !bytes.Equal(c, b) {
-		t.Fatal("read/write not in sync")
 	}
 }
 

@@ -38,22 +38,9 @@ func File(path string, opts ...Option) *Data {
 	return d
 }
 
-func (d *Data) Write(b []byte) (int, error) {
-	f, err := os.OpenFile(d.Path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, d.Perm)
-	if err != nil {
-		return 0, err
-	}
-	defer f.Close()
-	return f.Write(b)
-}
-
-func (d *Data) Read(b []byte) (int, error) {
-	f, err := os.Open(d.Path)
-	if err != nil {
-		return 0, err
-	}
-	defer f.Close()
-	return f.Read(b)
+// Open opens a golden file. Closing of the file is the callers responsibility.
+func (d *Data) Open() (*os.File, error) {
+	return os.OpenFile(d.Path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, d.Perm)
 }
 
 // Possible errors when invoking the Eq func.
@@ -61,6 +48,7 @@ var (
 	ErrNotEqual     = errors.New("not equal")
 	ErrNoMarshaller = errors.New("no marshaller")
 	ErrNoPath       = errors.New("no golden file path")
+	ErrNoDiffer     = errors.New("no differ")
 )
 
 // Eq compares the value v to the contents of the golden file.
@@ -71,6 +59,9 @@ func (d *Data) Eq(v interface{}) (string, error) {
 	}
 	if d.Marsh == nil {
 		return "", ErrNoMarshaller
+	}
+	if d.Diff == nil {
+		return "", ErrNoDiffer
 	}
 	m, err := d.Marsh(v)
 	if err != nil {
