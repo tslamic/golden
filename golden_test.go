@@ -33,10 +33,6 @@ func TestJSON(t *testing.T) {
 
 	gf := File("testdata/hello.json", JSON, IgnoreWhitespace)
 	gf.Equals(t, greet)
-
-	gf = File("testdata/golden.file", func(d *Data) {
-		// apply custom attributes to d here.
-	})
 }
 
 type book struct {
