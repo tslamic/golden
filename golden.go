@@ -6,31 +6,38 @@ import (
 	"flag"
 	"io/ioutil"
 	"os"
-	"sync"
 	"testing"
-	"unicode"
 )
 
 var update = flag.Bool("update", false, "update golden files")
 
 // Data represents the golden file attributes.
 type Data struct {
-	Path             string
-	Perm             os.FileMode
-	Marsh            Marshaller
-	Diff             Differ
-	Update           bool
-	IgnoreWhitespace bool
+	Path       string
+	Perm       os.FileMode
+	Marsh      Marshaller
+	Diff       Differ
+	Transforms []Transformer
+	Update     bool
+}
+
+func (d *Data) Add(t Transformer) *Data {
+	if t == nil {
+		return d
+	}
+	d.Transforms = append(d.Transforms, t)
+	return d
 }
 
 // File creates a new golden file.
 func File(path string, opts ...Option) *Data {
 	d := &Data{
-		Marsh:  DefaultMarshaller,
-		Diff:   DefaultDiffer,
-		Path:   path,
-		Perm:   0644, // -rw-r--r--
-		Update: *update,
+		Marsh:      DefaultMarshaller,
+		Diff:       DefaultDiffer,
+		Transforms: []Transformer{},
+		Path:       path,
+		Perm:       0644, // -rw-r--r--
+		Update:     *update,
 	}
 	for _, opt := range opts {
 		opt(d)
@@ -45,10 +52,10 @@ func (d *Data) Open() (*os.File, error) {
 
 // Possible errors when invoking the Eq func.
 var (
-	ErrNotEqual     = errors.New("not equal")
-	ErrNoMarshaller = errors.New("no marshaller")
 	ErrNoPath       = errors.New("no golden file path")
+	ErrNoMarshaller = errors.New("no marshaller")
 	ErrNoDiffer     = errors.New("no differ")
+	ErrNotEqual     = errors.New("not equal")
 )
 
 // Eq compares the value v to the contents of the golden file.
@@ -76,8 +83,8 @@ func (d *Data) Eq(v interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if d.IgnoreWhitespace {
-		m, f = stripSpace(m, f)
+	for _, t := range d.Transforms {
+		m, f = t(m, f)
 	}
 	if eq := bytes.Equal(m, f); eq {
 		return "", nil
@@ -97,24 +104,4 @@ func (d *Data) Equals(t *testing.T, v interface{}) {
 	default:
 		t.Fatal(err)
 	}
-}
-
-func stripSpace(t, u []byte) ([]byte, []byte) {
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() { defer wg.Done(); t = strip(t) }()
-	go func() { defer wg.Done(); u = strip(u) }()
-	wg.Wait()
-	return t, u
-}
-
-func strip(b []byte) []byte {
-	buf := make([]byte, 0, len(b))
-	for _, r := range b {
-		if unicode.IsSpace(rune(r)) {
-			continue
-		}
-		buf = append(buf, r)
-	}
-	return buf
 }

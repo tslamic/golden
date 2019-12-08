@@ -17,6 +17,6 @@ var (
 		d.Marsh = xml.Marshal
 	}
 	IgnoreWhitespace Option = func(d *Data) {
-		d.IgnoreWhitespace = true
+		d.Add(StripWhitespace)
 	}
 )

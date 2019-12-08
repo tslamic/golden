@@ -1,7 +1,6 @@
 package golden
 
 import (
-	"bytes"
 	"encoding/xml"
 	"testing"
 	"time"
@@ -96,21 +95,5 @@ func TestXML(t *testing.T) {
 	gf := File("testdata/catalog.xml", XML, IgnoreWhitespace)
 	if diff, err := gf.Eq(c); err != nil {
 		t.Fatal(err, diff)
-	}
-}
-
-func TestStrip(t *testing.T) {
-	values := map[string]string{
-		" ":               "",
-		"\n\t\v\r\f":      "",
-		"abc\n\t123":      "abc123",
-		"\vhello world\r": "helloworld",
-	}
-	for str, exp := range values {
-		s := []byte(str)
-		e := []byte(exp)
-		if !bytes.Equal(strip(s), e) {
-			t.Fatal("not equal", str, exp)
-		}
 	}
 }
