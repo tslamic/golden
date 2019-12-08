@@ -17,8 +17,11 @@ import (
 
 var update = flag.Bool("update", false, "update golden files")
 
-// Marshaller returns v as a []byte.
+// Marshaller returns v encoded as []byte.
 type Marshaller func(v interface{}) ([]byte, error)
+
+// Differ returns a diff string between t and u.
+type Differ func(t, u []byte) string
 
 // Option can modify the golden file attributes.
 type Option func(*Data)
@@ -36,7 +39,7 @@ var (
 	}
 )
 
-// ErrUnsupportedType is returned when using the Marshaller and the interface{} v is not []byte or string.
+// ErrUnsupportedType is returned when encoding values other than string or a []byte using the DefaultMarshaller.
 var ErrUnsupportedType = errors.New("only []byte and string are supported by default, use a custom Marshaller, e.g. JSON")
 
 // DefaultMarshaller can handle []byte or string type.
@@ -51,11 +54,18 @@ var DefaultMarshaller Marshaller = func(v interface{}) ([]byte, error) {
 	}
 }
 
+var DefaultDiffer Differ = func(t, u []byte) string {
+	p := diffmatchpatch.New()
+	d := p.DiffMain(string(t), string(u), false)
+	return p.DiffPrettyText(d)
+}
+
 // Data represents the golden file attributes.
 type Data struct {
 	Path             string
 	Perm             os.FileMode
 	Marsh            Marshaller
+	Diff             Differ
 	Update           bool
 	IgnoreWhitespace bool
 }
@@ -64,6 +74,7 @@ type Data struct {
 func File(path string, opts ...Option) *Data {
 	d := &Data{
 		Marsh:  DefaultMarshaller,
+		Diff:   DefaultDiffer,
 		Path:   path,
 		Perm:   0644, // -rw-r--r--
 		Update: *update,
@@ -124,12 +135,10 @@ func (d *Data) Eq(v interface{}) (string, error) {
 	if d.IgnoreWhitespace {
 		m, f = stripSpace(m, f)
 	}
-	if eq := bytes.Equal(m, f); !eq {
-		p := diffmatchpatch.New()
-		d := p.DiffMain(string(m), string(f), false)
-		return p.DiffPrettyText(d), ErrNotEqual
+	if eq := bytes.Equal(m, f); eq {
+		return "", nil
 	}
-	return "", nil
+	return d.Diff(m, f), ErrNotEqual
 }
 
 // Equals compares the value v to the contents of the golden file.
