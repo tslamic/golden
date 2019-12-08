@@ -2,32 +2,32 @@
 
 # :large_orange_diamond: Golden  
   
+Excruciatingly simple golden file handling.
+
 ```  
 go get -u github.com/tslamic/golden
-```  
+```   
 
-Excruciatingly simple golden file handling. To update the files, use the `-update` flag, or roll your own update mechanism:
-
-```go
-gf := golden.File("testdata/hello.json", JSON, func(d *Data) {
-  d.Update = true // ¯\_(ツ)_/¯
-})
-```
-  
-## Examples  
+## How to use it?
 
 ```go
-// JSON  
-hello := &Greeting{Greeting: "Hello, World!"}  
-gf := golden.File("testdata/hello.json", JSON)  
-gf.Equals(t, greeter) // t is of type *testing.T
+func TestJSON(t *testing.T) {
+	greet := &greeter{Greeting: "Hello, World!"}
 
-// Ignore all whitespace
-gf := golden.File("testdata/boring.xml", XML, IgnoreWhitespace)  
-if diff, err := gf.Eq(something); err != nil {  
-    t.Fatal(err, "difference: ", diff)
+	gf := golden.File("testdata/hello.json", JSON, IgnoreWhitespace)
+	gf.Equals(t, greet)
 }
 ```
+
+It's easy to provide custom attributes:
+
+```go
+gf := File("testdata/golden.file", func(d *Data) {
+	// apply custom attributes to d here.
+})
+```
+
+You can add a custom `Marshaller`, `Differ`, and as many `Transformer` funcs as you'd like. To update the golden files, use the `-update` flag, or roll your own update mechanism.
 
 ## License
 
