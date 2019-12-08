@@ -1,6 +1,8 @@
 package golden
 
-import "errors"
+import (
+	"errors"
+)
 
 // Marshaller returns v encoded as []byte.
 type Marshaller func(v interface{}) ([]byte, error)
@@ -10,6 +12,9 @@ var ErrUnsupportedType = errors.New("only []byte and string are supported by def
 
 // DefaultMarshaller can handle []byte or string type.
 var DefaultMarshaller Marshaller = func(v interface{}) ([]byte, error) {
+	if v == nil {
+		return nil, ErrUnsupportedType
+	}
 	switch v := v.(type) {
 	case string:
 		return []byte(v), nil

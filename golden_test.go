@@ -117,17 +117,6 @@ func TestReadWrite(t *testing.T) {
 	}
 }
 
-func TestDefaultMarshaller(t *testing.T) {
-	gf := File("testdata/world.txt")
-	if diff, err := gf.Eq(content); err != nil {
-		t.Fatal(err, diff)
-	}
-	c := []byte(content)
-	if diff, err := gf.Eq(c); err != nil {
-		t.Fatal(err, diff)
-	}
-}
-
 func TestStrip(t *testing.T) {
 	values := map[string]string{
 		" ":               "",
