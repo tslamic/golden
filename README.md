@@ -14,7 +14,7 @@ go get -u github.com/tslamic/golden
 func TestJSON(t *testing.T) {
 	greet := &greeter{Greeting: "Hello, World!"}
 
-	gf := golden.File("testdata/hello.json", JSON, IgnoreWhitespace)
+	gf := golden.File("testdata/hello.json", golden.JSON, golden.IgnoreWhitespace)
 	gf.Equals(t, greet)
 }
 ```
@@ -22,7 +22,7 @@ func TestJSON(t *testing.T) {
 It's easy to provide custom attributes:
 
 ```go
-gf := File("testdata/golden.file", func(d *Data) {
+gf := File("testdata/golden.file", func(d *golden.Data) {
 	// apply custom attributes to d here.
 })
 ```
@@ -31,4 +31,4 @@ You can add a custom `Marshaller`, `Differ`, and as many `Transformer` funcs as 
 
 ## License
 
-The MIT License (MIT), Copyright (c) 2019 tslamic
+The MIT License. 
