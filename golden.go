@@ -21,11 +21,11 @@ type Data struct {
 	Update     bool
 }
 
+// Add adds a new Transformer func.
 func (d *Data) Add(t Transformer) *Data {
-	if t == nil {
-		return d
+	if t != nil {
+		d.Transforms = append(d.Transforms, t)
 	}
-	d.Transforms = append(d.Transforms, t)
 	return d
 }
 
