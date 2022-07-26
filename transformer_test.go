@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestStrip(t *testing.T) {
+func TestStripWhitespace(t *testing.T) {
 	values := map[string]string{
 		" ":               "",
 		"\n\t\v\r\f":      "",

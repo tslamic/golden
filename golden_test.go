@@ -1,38 +1,101 @@
 package golden
 
 import (
+	"bytes"
+	"encoding/gob"
 	"encoding/xml"
+	"errors"
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
-func TestErr(t *testing.T) {
-	errs := map[*Data]error{
-		File(""):          ErrNoPath,
-		File("world.txt"): ErrUnsupportedType,
-		File("hello.json", func(d *Data) {
-			d.Marsh = nil
-		}): ErrNoMarshaller,
-		File("hello.json", JSON, func(d *Data) {
-			d.Diff = nil
-		}): ErrNoDiffer,
+func TestJSON(t *testing.T) {
+	expected := newGreeter()
+	gf := File("testdata/hello.json")
+	gf.Equals(t, expected)
+}
+
+func TestXML(t *testing.T) {
+	expected := newCatalog()
+	gf := File("testdata/catalog.xml")
+	gf.Equals(t, expected)
+}
+
+func TestText(t *testing.T) {
+	expected := "Hello World!"
+	gf := File("testdata/world.txt")
+	gf.Equals(t, expected)
+}
+
+func TestTextByte(t *testing.T) {
+	expected := []byte("Hello World!")
+	gf := File("testdata/world.txt")
+	gf.Equals(t, expected)
+}
+
+func TestJSONWhitespace(t *testing.T) {
+	expected := newGreeter()
+	gf := File("testdata/hello_whitespace.json").Apply(StripWhitespace)
+	gf.Equals(t, expected)
+}
+
+func TestXMLWhitespace(t *testing.T) {
+	expected := newCatalog()
+	gf := File("testdata/catalog_whitespace.xml").Apply(StripWhitespace)
+	gf.Equals(t, expected)
+}
+
+func TestTextErr(t *testing.T) {
+	expected := "Oh noes!"
+	gf := File("testdata/world.txt")
+	_, err := gf.Eq(expected)
+	if !errors.Is(err, ErrNotEqual) {
+		t.Fatal("unexpected match")
 	}
-	for d, e := range errs {
-		_, err := d.Eq(struct{}{})
-		if e != err {
-			t.Fatalf("expected %s but got %s", e, err)
+}
+
+func TestMissingFile(t *testing.T) {
+	gf := File("testdata/missing.txt")
+	_, err := gf.Eq(struct{}{})
+	if err == nil {
+		t.Fatal("unexpected match")
+	}
+}
+
+func TestCustomMarshaller(t *testing.T) {
+	v := &vector{X: 0, Y: 1, Z: 2}
+	f, err := ioutil.TempFile("", "*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(f.Name())
+	err = gob.NewEncoder(f).Encode(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gf := File(f.Name(), func(attrs *Attrs) {
+		attrs.Marshaller = func(v interface{}) ([]byte, error) {
+			b := new(bytes.Buffer)
+			err := gob.NewEncoder(b).Encode(v)
+			return b.Bytes(), err
 		}
-	}
+	})
+	gf.Equals(t, v)
 }
 
 type greeter struct {
 	Greeting string `json:"greeting"`
 }
 
-func TestJSON(t *testing.T) {
-	greet := &greeter{Greeting: "Hello, World!"}
+func newGreeter() *greeter {
+	return &greeter{Greeting: "Hello, World!"}
+}
 
-	gf := File("testdata/hello.json", JSON, IgnoreWhitespace)
-	gf.Equals(t, greet)
+type catalog struct {
+	XMLName xml.Name `xml:"catalog"`
+	Text    string   `xml:",chardata"`
+	Books   []*book  `xml:"book"`
 }
 
 type book struct {
@@ -46,14 +109,8 @@ type book struct {
 	Description string `xml:"description"`
 }
 
-type catalog struct {
-	XMLName xml.Name `xml:"catalog"`
-	Text    string   `xml:",chardata"`
-	Books   []*book  `xml:"book"`
-}
-
-func TestXML(t *testing.T) {
-	c := catalog{
+func newCatalog() *catalog {
+	return &catalog{
 		Books: []*book{
 			{
 				ID:          "bk101",
@@ -76,8 +133,8 @@ func TestXML(t *testing.T) {
 			},
 		},
 	}
-	gf := File("testdata/catalog.xml", XML, IgnoreWhitespace)
-	if diff, err := gf.Eq(c); err != nil {
-		t.Fatal(err, diff)
-	}
+}
+
+type vector struct {
+	X, Y, Z int
 }
