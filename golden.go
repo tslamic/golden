@@ -52,7 +52,7 @@ const (
 func File(path string, opts ...Option) *Attrs {
 	d := &Attrs{
 		Path:      path,
-		Flag:      os.O_RDWR,
+		Flag:      os.O_RDWR, //nolint:nosnakecase
 		Perm:      defaultFilePerm,
 		ChunkSize: defaultChunkSize,
 		Update:    *update,
@@ -119,6 +119,7 @@ func (d *Attrs) Eq(v interface{}) (string, error) {
 //	gf := golden.File("testdata/hello.json")
 //	gf.Equals(t, expected)
 func (d *Attrs) Equals(t *testing.T, v interface{}) {
+	t.Helper()
 	diff, err := d.Eq(v)
 	if err != nil {
 		if errors.Is(err, ErrNotEqual) {
