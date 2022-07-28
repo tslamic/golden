@@ -1,22 +1,24 @@
-package golden
+package golden_test
 
 import (
 	"bytes"
 	"testing"
+
+	"github.com/tslamic/golden/v2"
 )
 
 func TestStripWhitespace(t *testing.T) {
-	values := map[string]string{
-		" ":               "",
-		"\n\t\v\r\f":      "",
-		"abc\n\t123":      "abc123",
-		"\vhello world\r": "helloworld",
+	values := [][2]string{
+		{" ", "\n\t\v\r\f"},
+		{"abc\n\t123", "abc123"},
+		{"\vhello world\r", "\n\thello\v\r\fworld"},
 	}
-	for str, exp := range values {
-		s := []byte(str)
-		e := []byte(exp)
-		if !bytes.Equal(strip(s), e) {
-			t.Fatal("not equal", str, exp)
+	for _, str := range values {
+		x := []byte(str[0])
+		y := []byte(str[1])
+		u, v := golden.StripWhitespace(x, y)
+		if !bytes.Equal(u, v) {
+			t.Fatalf("not equal: %s, %s", x, y)
 		}
 	}
 }

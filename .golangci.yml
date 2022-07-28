@@ -1,36 +1,21 @@
 linters:
-  disable-all: true
-  enable:
-    - gofmt
-    - govet
-    - gocritic
-    - goconst
-    - godot
-    - gosimple
-    - gosec
-    - goimports
-    - bodyclose
-    - deadcode
-    - errcheck
-    - errorlint
-    - unconvert
-    - containedctx
-    - dupl
-    - staticcheck
-    - structcheck
-    - misspell
-    - ineffassign
-    - unparam
-    - typecheck
-    - varcheck
-    - unused
-    - whitespace
-    - wastedassign
+  enable-all: true
+  disable:
+    - wsl
+    - paralleltest
+    - nlreturn
+    - gochecknoglobals
+    - varnamelen
+    - gomnd
+    - exhaustivestruct
+    - exhaustruct
+    - wrapcheck
 
 linters-settings:
   gofmt:
     simplify: true
-
+  cyclop:
+    max-complexity: 12
 run:
   go: '1.17'
   timeout: 2m
