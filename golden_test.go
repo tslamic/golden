@@ -1,4 +1,4 @@
-package golden
+package golden_test
 
 import (
 	"bytes"
@@ -8,57 +8,58 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/tslamic/golden/v2"
 )
 
 func TestJSON(t *testing.T) {
 	expected := newGreeter()
-	gf := File("testdata/hello.json")
+	gf := golden.File("testdata/hello.json")
 	gf.Equals(t, expected)
 }
 
 func TestXML(t *testing.T) {
 	expected := newCatalog()
-	gf := File("testdata/catalog.xml")
+	gf := golden.File("testdata/catalog.xml")
 	gf.Equals(t, expected)
 }
 
 func TestText(t *testing.T) {
 	expected := "Hello World!"
-	gf := File("testdata/world.txt")
+	gf := golden.File("testdata/world.txt")
 	gf.Equals(t, expected)
 }
 
 func TestTextByte(t *testing.T) {
 	expected := []byte("Hello World!")
-	gf := File("testdata/world.txt")
+	gf := golden.File("testdata/world.txt")
 	gf.Equals(t, expected)
 }
 
 func TestJSONWhitespace(t *testing.T) {
 	expected := newGreeter()
-	gf := File("testdata/hello_whitespace.json").Apply(StripWhitespace)
+	gf := golden.File("testdata/hello_whitespace.json").Apply(golden.StripWhitespace)
 	gf.Equals(t, expected)
 }
 
 func TestXMLWhitespace(t *testing.T) {
 	expected := newCatalog()
-	gf := File("testdata/catalog_whitespace.xml").Apply(StripWhitespace)
+	gf := golden.File("testdata/catalog_whitespace.xml").Apply(golden.StripWhitespace)
 	gf.Equals(t, expected)
 }
 
 func TestTextErr(t *testing.T) {
 	expected := "Oh noes!"
-	gf := File("testdata/world.txt")
+	gf := golden.File("testdata/world.txt")
 	_, err := gf.Eq(expected)
-	if !errors.Is(err, ErrNotEqual) {
+	if !errors.Is(err, golden.ErrNotEqual) {
 		t.Fatal("unexpected match")
 	}
 }
 
 func TestMissingFile(t *testing.T) {
-	gf := File("testdata/missing.txt")
-	_, err := gf.Eq(struct{}{})
-	if err == nil {
+	gf := golden.File("testdata/missing.txt")
+	if _, err := gf.Eq(struct{}{}); err == nil {
 		t.Fatal("unexpected match")
 	}
 }
@@ -74,7 +75,7 @@ func TestCustomMarshaller(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	gf := File(f.Name(), func(attrs *Attrs) {
+	gf := golden.File(f.Name(), func(attrs *golden.Attrs) {
 		attrs.Marshaller = func(v interface{}) ([]byte, error) {
 			b := new(bytes.Buffer)
 			err := gob.NewEncoder(b).Encode(v)

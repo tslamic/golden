@@ -29,11 +29,11 @@ type Attrs struct {
 	Path       string
 	Flag       int         // Flag to use with os.OpenFile.
 	Perm       os.FileMode // Perm to use with os.OpenFile and os.WriteFile.
+	Update     bool
 	Marshaller Marshaller
 	Differ     Differ
 	Transforms []Transformer
 	ChunkSize  int64 // Byte size of the chunks used to read the golden file.
-	Update     bool
 }
 
 // Apply sets a new Transformer func, e.g.:
@@ -44,7 +44,7 @@ func (d *Attrs) Apply(t ...Transformer) *Attrs {
 }
 
 const (
-	defaultFilePerm  = 0644
+	defaultFilePerm  = 0o644
 	defaultChunkSize = 4096
 )
 
@@ -52,7 +52,7 @@ const (
 func File(path string, opts ...Option) *Attrs {
 	d := &Attrs{
 		Path:      path,
-		Flag:      os.O_RDWR,
+		Flag:      os.O_RDWR, //nolint:nosnakecase
 		Perm:      defaultFilePerm,
 		ChunkSize: defaultChunkSize,
 		Update:    *update,
@@ -119,6 +119,7 @@ func (d *Attrs) Eq(v interface{}) (string, error) {
 //	gf := golden.File("testdata/hello.json")
 //	gf.Equals(t, expected)
 func (d *Attrs) Equals(t *testing.T, v interface{}) {
+	t.Helper()
 	diff, err := d.Eq(v)
 	if err != nil {
 		if errors.Is(err, ErrNotEqual) {
