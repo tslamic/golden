@@ -1,4 +1,6 @@
-[![CircleCI](https://circleci.com/gh/tslamic/golden.svg?style=svg)](https://circleci.com/gh/tslamic/golden) [![Go Report Card](https://goreportcard.com/badge/github.com/tslamic/golden)](https://goreportcard.com/report/github.com/tslamic/golden)
+[![CircleCI](https://circleci.com/gh/tslamic/golden.svg?style=svg)](https://circleci.com/gh/tslamic/golden) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/tslamic/golden)](https://goreportcard.com/report/github.com/tslamic/golden)
+[![Go Reference](https://pkg.go.dev/badge/github.com/tslamic/golden/v2.svg)](https://pkg.go.dev/github.com/tslamic/golden/v2)
 
 # :large_orange_diamond: Golden
 
@@ -8,7 +10,7 @@ If you're unsure what golden files are, check [this video](https://youtu.be/8hQG
 ## How to use it?
 
 ```  
-go get -u github.com/tslamic/golden/v2
+go get github.com/tslamic/golden/v2
 ```
 
 If your files are JSON, XML or plain text, you're good to go:
